@@ -1,41 +1,31 @@
 import requests
 
-class Bi_connec:
-    def __init__(self, log, password):
 
-        self.token = get_token()
-        self.log = log
-        self.password = password
+def get_banks():
+    r = requests.get("https://demo.biapi.pro/2.0/banks").json()
+    banks = r['banks']
+    for bank in banks:
+        print (bank['name'],':', bank['id'])
 
-    pass
+def get_token():
 
-    def get_banks():
-        r = requests.get("https://demo.biapi.pro/2.0/banks").json()
-        banks = r['banks']
-        for bank in banks:
-            print (bank['name'],':', bank['id'])
+    r = requests.post("https://demo.biapi.pro/2.0/auth/init").json()
 
-    def get_token():
+    return(r['auth_token'])
 
-        r = requests.post("https://demo.biapi.pro/2.0/auth/init").json()
+def request_api(bank, log, password):
+    token = str(get_token())
+    payload = {'id_bank':bank, 'login':log, 'password':password,}
+    headers = {'Authorization': 'Bearer '+token}
+    s = requests.Session()
+    s.get("https://demo.biapi.pro/2.0/banks?expand=fields", headers=headers)
+    s.post('https://demo.biapi.pro/2.0/users/me/connections?expand=fields', data=payload, headers=headers)
+    a = s.get('https://demo.biapi.pro/2.0/users/me/accounts', headers=headers).json()
+    t = s.get('https://demo.biapi.pro/2.0/users/me/transactions', headers=headers).json()
+    print(a)
+    print(t)
 
-        return(r['auth_token'])
 
-    def request_api(log, password):
-        token = str(get_token())
-        payload = {'id_bank':'1152', 'login':log, 'password':password,}
-        headers = {'Authorization': 'Bearer '+token}
-
-        r = requests.post('https://demo.biapi.pro/2.0/users/me/connections?expand=fields', data=payload, headers=headers).json()#data pour le POST et param pour le GET
-        #r = requests.get('https://demo.biapi.pro/2.0/banks/1152?expand=fields', headers=headers).json()
-        #print(s)
-        return(r['id_user'])
-
-    def update(id):
-        token = str(get_token())
-        headers = {'Authorization': 'Bearer '+token}
-        r = requests.get("https://demo.biapi.pro/2.0//users/"+str(id)+"/connections?expand=accounts", headers=headers).json()
-        print(r)
 """
 POST /users/me/connections
 Authorization: Bearer <token>
@@ -45,5 +35,4 @@ Authorization: Bearer <token>
 """
 
 if __name__ == '__main__':
-    print(get_token())
-    get_banks()
+    pass
